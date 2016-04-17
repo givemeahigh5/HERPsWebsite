@@ -54,6 +54,8 @@ import com.google.appengine.api.datastore.Text;
 import com.google.appengine.api.datastore.Query.FilterOperator;
 import com.google.appengine.api.urlfetch.HTTPResponse;
 
+import com.google.appengine.api.blobstore.BlobKey;
+
 import edu.elon.herps.NameValuePair;
 import edu.elon.herps.UploadData;
 
@@ -80,7 +82,7 @@ public class DownloadServlet extends HttpServlet {
 		if (orders.size() == 0) {
 			resp.getWriter().println("No data for " + category);
 			return;
-		} 
+		}
 		Entity order = orders.get(0);
 
 		final Map<String, Object> map = order.getProperties();
@@ -93,15 +95,15 @@ public class DownloadServlet extends HttpServlet {
 				return ((Long)map.get(o1)).compareTo((Long)map.get(o2));
 			}
 		});
-		
+
 		TimeZone.setDefault(TimeZone.getTimeZone("America/New_York"));
-		
+
 		q = new Query(category);
 		q.addFilter("order", FilterOperator.NOT_EQUAL, "true");
 		q.addSort("order");
 		q.addSort("Submit Time");
 		Iterable<Entity> results = datastore.prepare(q).asIterable();
-		
+
 		boolean embed = pictureAction.equals("embed");
 		if (view.equals("web")) {
 			writeHTML(resp, headers, results, embed);
@@ -111,8 +113,12 @@ public class DownloadServlet extends HttpServlet {
 	}
 
 	private void writeExcel(HttpServletRequest req, HttpServletResponse resp,
-			LinkedList<String> headers, Iterable<Entity> results,
-			boolean embedPictures) throws IOException {
+		LinkedList<String> headers, Iterable<Entity> results,
+		boolean embedPictures) throws IOException {
+
+		String contentType = embedPictures ? "application/zip" : "application/vnd.ms-excel";
+		resp.setContentType(contentType);
+
 		String filename = embedPictures ? "data.zip" : "data.xls";
 		resp.setHeader("Content-disposition", "attachment; filename=" + filename);
 
@@ -125,7 +131,7 @@ public class DownloadServlet extends HttpServlet {
 		if (embedPictures) {
 			zos = new ZipOutputStream(resp.getOutputStream());
 			ZipEntry entry = new ZipEntry("data.xls");
-			zos.putNextEntry(entry); 
+			zos.putNextEntry(entry);
 			output = zos;
 		} else {
 			output = resp.getOutputStream();
@@ -157,13 +163,13 @@ public class DownloadServlet extends HttpServlet {
 					if (value != null && value instanceof Key) {
 						long id = ((Key)value).getId();
 						if (embedPictures) {
-							sheet.addHyperlink(new WritableHyperlink(c, r, 
+							sheet.addHyperlink(new WritableHyperlink(c, r,
 									new File("pictures/" + id + ".jpg")));
 							pictures.add(id);
 
 						} else {
-							sheet.addHyperlink(new WritableHyperlink(c, r, 
-									new URL(picture + id)));								
+							sheet.addHyperlink(new WritableHyperlink(c, r,
+									new URL(picture + id)));
 						}
 					} else if (value instanceof Long) {
 						cell = new Number(c, r, ((Long)value).longValue());
@@ -172,11 +178,11 @@ public class DownloadServlet extends HttpServlet {
 					} else if (value instanceof Double) {
 						cell = new Number(c, r, (Double)value);
 					} else if (value instanceof Date) {
-//						DateFormat customDateFormat = 
+//						DateFormat customDateFormat =
 //							new DateFormat("dd/MM/yyyy h:mm aa");
 //						format = new WritableCellFormat (customDateFormat);
 //						format.setFont(normal);
-//						cell = new DateTime(c, r, (Date)value); 
+//						cell = new DateTime(c, r, (Date)value);
 						cell = new Label(c, r, toString(value));
 					} else {
 						cell = new Label(c, r, toString(value));
@@ -215,7 +221,7 @@ public class DownloadServlet extends HttpServlet {
 							}
 
 							@Override
-							public void write(byte[] b, int off, int len) 
+							public void write(byte[] b, int off, int len)
 							throws IOException {
 								fzos.write(b, off, len);
 							}
@@ -234,7 +240,7 @@ public class DownloadServlet extends HttpServlet {
 		}
 	}
 
-	private void writeHTML(HttpServletResponse resp, LinkedList<String> headers, 
+	private void writeHTML(HttpServletResponse resp, LinkedList<String> headers,
 			Iterable<Entity> results, boolean embedPictures) throws IOException {
 		resp.setContentType("text/html");
 		PrintWriter writer = resp.getWriter();
@@ -250,15 +256,36 @@ public class DownloadServlet extends HttpServlet {
 		for (String header : headers) {
 			writer.print("<th>" + header + "</th>");
 		}
-		writer.println("</tr></thead>");		
-		
+		writer.println("</tr></thead>");
+
 		for (Entity data : results) {
 			writer.print("<tr>");
 			for (String header : headers) {
 				Object value = data.getProperty(header);
-				if (value != null && value instanceof Key) {
+
+				/**********/
+				if (value != null && value instanceof BlobKey) {
+					String id = "?id=" + ((BlobKey)value).getKeyString();
+					String link = "blob" + id;
+					String content;
+
+					if(header.contains("Recording")) {
+						content = "recording" + id;
+					}
+					else if(embedPictures) {
+						content = String.format("<img src='%s' width='150'/>", link);
+					}
+					else {
+						content = "picture" + id;
+					}
+
+					writer.printf("<td><a href='%s'>%s</a></td>", link, content);
+				}
+				/**********/
+				//the Key function would only apply to android pictures stored in the datastore (and not in blobstore)
+				else if (value != null && value instanceof Key) {
 					String link = "picture?id=" + ((Key)value).getId();
-					String content = String.format(embedPictures ? 
+					String content = String.format(embedPictures ?
 							"<img src='%s' width='150'/>" : "%s", link);
 					writer.printf("<td><a href='%s'>%s</a></td>",
 							link, content);
@@ -273,7 +300,7 @@ public class DownloadServlet extends HttpServlet {
 
 	private static String toString(Object o) {
 		if (o instanceof Date) {
-			SimpleDateFormat df = 
+			SimpleDateFormat df =
 				new SimpleDateFormat("dd/MM/yyyy h:mm aa");
 			return df.format((Date)o);
 		}

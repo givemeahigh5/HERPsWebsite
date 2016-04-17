@@ -4,6 +4,7 @@ xmlns="http://java.sun.com/xml/ns/javaee"
 xmlns:web="http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd"
 xsi:schemaLocation="http://java.sun.com/xml/ns/javaee
 http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd" version="2.5">
+
 	<servlet>
 		<servlet-name>Upload</servlet-name>
 		<servlet-class>edu.elon.herps.servlet.UploadServlet</servlet-class>
@@ -12,7 +13,36 @@ http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd" version="2.5">
 		<servlet-name>Upload</servlet-name>
 		<url-pattern>/upload</url-pattern>
 	</servlet-mapping>
-	
+
+
+	<servlet>
+		<servlet-name>upload-ios</servlet-name>
+		<servlet-class>edu.elon.herps.servlet.UploadServletIOS</servlet-class>
+	</servlet>
+	<servlet-mapping>
+		<servlet-name>upload-ios</servlet-name>
+		<url-pattern>/upload-ios</url-pattern>
+	</servlet-mapping>
+
+	<servlet>
+        <servlet-name>create-file-upload</servlet-name>
+        <servlet-class>edu.elon.herps.servlet.CreateFileUploadServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>create-file-upload</servlet-name>
+        <url-pattern>/create-file-upload</url-pattern>
+    </servlet-mapping>
+
+    <servlet>
+        <servlet-name>return-file-upload</servlet-name>
+        <servlet-class>edu.elon.herps.servlet.ReturnFileUploadServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>return-file-upload</servlet-name>
+        <url-pattern>/return-file-upload</url-pattern>
+    </servlet-mapping>
+
+
 	<servlet>
 		<servlet-name>Download</servlet-name>
 		<servlet-class>edu.elon.herps.servlet.DownloadServlet</servlet-class>
@@ -21,7 +51,7 @@ http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd" version="2.5">
 		<servlet-name>Download</servlet-name>
 		<url-pattern>/download</url-pattern>
 	</servlet-mapping>
-	
+
 	<servlet>
 		<servlet-name>Picture</servlet-name>
 		<servlet-class>edu.elon.herps.servlet.PictureServlet</servlet-class>
@@ -30,7 +60,16 @@ http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd" version="2.5">
 		<servlet-name>Picture</servlet-name>
 		<url-pattern>/picture</url-pattern>
 	</servlet-mapping>
-	
+
+	<servlet>
+		<servlet-name>Blob</servlet-name>
+		<servlet-class>edu.elon.herps.servlet.BlobServlet</servlet-class>
+	</servlet>
+	<servlet-mapping>
+		<servlet-name>Blob</servlet-name>
+		<url-pattern>/blob</url-pattern>
+	</servlet-mapping>
+
 	<servlet>
 		<servlet-name>Time</servlet-name>
 		<servlet-class>edu.elon.herps.servlet.Time</servlet-class>
@@ -39,7 +78,7 @@ http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd" version="2.5">
 		<servlet-name>Time</servlet-name>
 		<url-pattern>/time</url-pattern>
 	</servlet-mapping>
-	
+
 	<welcome-file-list>
 		<welcome-file>download.jsp</welcome-file>
 	</welcome-file-list>

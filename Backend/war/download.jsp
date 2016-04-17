@@ -10,11 +10,13 @@
 		<select name="category">
 			<option>Aquatic Turtle</option>
 			<option>Box Turtle</option>
-			<option>Ephemeral Pool</option>
-			<option>Field Data</option>
-			<option>Frog Call</option>
 			<option>Lizard</option>
 			<option>Snake</option>
+			<option>Frog Call</option>
+			<option>Aquatic Habitat Data</option>
+			<option>Field Data</option>
+			<option>Ephemeral Pool</option>
+			<option>Vernal Pool</option>
 			
 		</select>
 		<p>How would you like to view the data?<p>
